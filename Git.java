@@ -3,7 +3,6 @@ import java.io.IOException;
 
 public class Git {
     public static void main(String[] args) throws IOException {
-        initializeRepo();
         
     }
 
@@ -35,4 +34,5 @@ public class Git {
         return;   
     }
     
+
 }
