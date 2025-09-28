@@ -1,8 +1,9 @@
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 public class GitTester {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         Git.initializeRepo();
         verifyRepo();
         File git = new File("git");
@@ -15,7 +16,17 @@ public class GitTester {
             cleanUp(git);
         }
 
-    }
+        // testing sha1
+        String result = Git.hashSHA1("Hero pookie");
+        String expectation = "d187aa9d5bd8719783d54b081624b8d34f014104";
+        if (result.equals(expectation))  {
+            System.out.println("hash method works");
+        }
+        else{
+            System.out.println("hash method doesnt work");
+        }
+
+ }
     
     public static void verifyRepo() {
         File git = new File("git");
