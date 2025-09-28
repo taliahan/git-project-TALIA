@@ -1,12 +1,15 @@
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Git {
     public static void main(String[] args) throws IOException {
         
     }
 
-    public static void initializeRepo() throws IOException{
+    public static void initializeRepo() throws IOException {
         File git = new File("git");
         File objects = new File(git, "objects");
         File index = new File(git, "index");
@@ -14,13 +17,14 @@ public class Git {
         if (objects.exists() && index.exists() && head.exists() && git.exists()) {
             System.out.println("Git Repository Already Exists");
             return;
-            }
+        }
 
         if (!git.exists()) {
-            git.mkdir();}
+            git.mkdir();
+        }
 
         if (!objects.exists()) {
-             objects.mkdir();
+            objects.mkdir();
         }
 
         if (!index.exists()) {
@@ -31,8 +35,28 @@ public class Git {
         }
 
         System.out.println("Git Repository Created");
-        return;   
+        return;
     }
+    
+
+    // got help from https://www.geeksforgeeks.org/java/sha-1-hash-in-java/
+    public static String hashSHA1(String content) throws NoSuchAlgorithmException {
+        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+        // getting raw hash result in a byte array
+
+        byte[] digest = sha1.digest(content.getBytes());
+        BigInteger hashValue = new BigInteger(1, digest);
+        String hashString = hashValue.toString(16);
+
+        // padding result to 40 char bc 160-bit hash = 40 characters but biginteger sometimes drops leading 0s
+        while (hashString.length() < 40) {
+            hashString = "0" + hashString;
+        }
+
+        return hashString;
+    } 
+
+
     
 
 }
