@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 
 public class GitTester {
@@ -22,9 +23,25 @@ public class GitTester {
         if (result.equals(expectation))  {
             System.out.println("hash method works");
         }
-        else{
+        else {
             System.out.println("hash method doesnt work");
         }
+        
+        // testing createBlob
+        File examp1 = new File("blob.txt");
+        Files.writeString(examp1.toPath(), "Hello world");
+
+        Git.initializeRepo(); 
+        Git.createBlob(examp1);
+        String hash = Git.hashSHA1("Hello world");
+        File blobFile = new File("git/objects", hash);
+
+        if (blobFile.exists()) {
+            System.out.println("Blob created successfully: " + blobFile.getName());
+        } else {
+            System.out.println("Blob creation failed.");
+        }
+
 
  }
     
@@ -79,7 +96,5 @@ public class GitTester {
         }
         directory.delete();
     }
-
-
     
 }

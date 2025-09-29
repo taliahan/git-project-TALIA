@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -55,6 +56,26 @@ public class Git {
 
         return hashString;
     } 
+
+
+    public static void createBlob(File input) throws IOException, NoSuchAlgorithmException {
+        // makes sure there is an objects directory too
+        File objects = new File("git/objects");
+        if (!objects.exists()) {
+            objects.mkdirs();
+        }
+    
+
+        String content = Files.readString(input.toPath());
+        String hash = hashSHA1(content);
+        File blobFile = new File("git/objects", hash);
+        if (blobFile.exists()) {
+            System.out.println("Blob already exists: " + hash);
+            return;
+        }
+
+        Files.writeString(blobFile.toPath(), content);
+    }
 
 
     
