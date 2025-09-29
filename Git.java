@@ -64,7 +64,6 @@ public class Git {
         if (!objects.exists()) {
             objects.mkdirs();
         }
-    
 
         String content = Files.readString(input.toPath());
         String hash = hashSHA1(content);
@@ -75,6 +74,12 @@ public class Git {
         }
 
         Files.writeString(blobFile.toPath(), content);
+    }
+    
+    public static boolean verifyBlob(String content) throws NoSuchAlgorithmException {
+        String hash = Git.hashSHA1(content);
+        File blobFile = new File("git/objects", hash);
+        return blobFile.exists();
     }
 
 

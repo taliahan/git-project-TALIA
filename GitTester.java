@@ -42,6 +42,19 @@ public class GitTester {
             System.out.println("Blob creation failed.");
         }
 
+        // stretch goal 3.1.1
+        resetRepo();
+        File test = new File("blobtest.txt");
+        Files.writeString(test.toPath(), "Stretch goal!");
+        Git.createBlob(test);
+
+        if (Git.verifyBlob("Stretch goal!")) {
+            System.out.println("Blob verified successfully.");
+        } else {
+            System.out.println("Blob not found.");
+        }
+
+
 
  }
     
@@ -96,5 +109,16 @@ public class GitTester {
         }
         directory.delete();
     }
+
+
+    public static void resetRepo() throws IOException {
+        File git = new File("git");
+        if (git.exists()) {
+            cleanUp(git);
+        }
+        Git.initializeRepo();
+    }
+
+
     
 }
