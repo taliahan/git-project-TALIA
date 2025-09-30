@@ -54,6 +54,27 @@ public class GitTester {
             System.out.println("Blob not found.");
         }
 
+        resetRepo();
+
+        // testing addToIndex
+        File testFile = new File("testIndex.txt");
+        Files.writeString(testFile.toPath(), "first version");
+
+        Git.initializeRepo();
+        Git.addToIndex(testFile);
+
+        // verify added
+        System.out.println("Index after first add: " + Files.readString(new File("git/index").toPath()));
+
+        // change file content
+        Files.writeString(testFile.toPath(), "second version");
+        Git.addToIndex(testFile);
+
+        // verify updated
+        System.out.println("Index after update: " + Files.readString(new File("git/index").toPath()));
+
+        // readd same content
+        Git.addToIndex(testFile); // should say "Blob already added to index"
 
 
  }

@@ -4,6 +4,10 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.nio.file.Path;
+
 
 public class Git {
     public static void main(String[] args) throws IOException {
@@ -60,7 +64,7 @@ public class Git {
 
     public static void createBlob(File input) throws IOException, NoSuchAlgorithmException {
         // makes sure there is an objects directory too
-        File objects = new File("git/objects");
+        File objects = new File("git", "objects");
         if (!objects.exists()) {
             objects.mkdirs();
         }
@@ -82,6 +86,52 @@ public class Git {
         return blobFile.exists();
     }
 
+    public static void addToIndex(File input) throws NoSuchAlgorithmException, IOException {
+        createBlob(input);
+
+        String content = Files.readString(input.toPath());
+        String sha = hashSHA1(content);
+        
+        // making sure index file exists
+        File index = new File("git", "index");
+        if (!index.exists()) {
+            index.createNewFile();
+        }
+        String add = sha + " " + input.getName();
+
+        // reading all the lines
+        List<String> lines = new ArrayList<>();
+        if (index.length() > 0) {
+            lines = Files.readAllLines(index.toPath());
+        }
+        
+        boolean update = false;
+
+        // checking through each line of index to see if the blob alr exists
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+
+            // if filename already exists in index
+            if (line.endsWith(" " + input.getName())) {
+                // blob alr exists
+                if (line.equals(add)) {
+                    System.out.println("Blob already added to index");
+                    return; 
+                } else {
+                // blob file is entered but the content has been altered so it has a new hash
+                    lines.set(i, add); // update hash
+                    update = true;
+                    break;
+                }
+            }
+        }
+
+        // if the blob didnt laready exist
+        if (!update) {
+            lines.add(add); // new file
+        }
+        Files.write(index.toPath(), lines);
+    }
 
     
 
