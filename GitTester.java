@@ -77,13 +77,27 @@ public class GitTester {
         // readd same content
         Git.addToIndex(testFile); // should say "Blob already added to index"
 
-        // stretch goal 4.1.1
+        // stretch goal 2.4.1
         resetRepo();
 
         testIndexWithFile("alphaaaaaa.txt", "ur not sigma");
         testIndexWithFile("rad.txt", "ur not rad");
         testIndexWithFile("gamma.txt", "kappa kappa gamma hahahhahehhehe");
- 
+
+        // stretch goal 2.4.2
+        System.out.println("Running resetRepoState...");
+        resetRepoState();
+
+        // verify repo is clean
+        File objects = new File("git/objects");
+        File index = new File("git/index");
+
+        if (objects.exists() && objects.listFiles().length == 0 && index.exists() && index.length() == 0) {
+            System.out.println("resetRepoState successfully cleaned repository.");
+        } else {
+            System.out.println("resetRepoState did not fully clean repository.");
+        }
+
 
 
  }
@@ -181,6 +195,34 @@ public class GitTester {
         }
     }
 
+    // cleans the git/index file // deletes all non-Java test files in the working directory 
+    
+    public static void resetRepoState() throws IOException {
+        File git = new File("git"); 
+        
+        // deletes all blobs inside git/objects 
+        File objects = new File(git, "objects"); 
+        if (objects.exists() && objects.isDirectory()) { 
+            for (File blob : objects.listFiles()) { 
+                blob.delete(); } 
+        } 
+
+        // resets the index file to empty 
+        File index = new File(git, "index"); 
+        if (index.exists()) { 
+            Files.writeString(index.toPath(), ""); 
+            // overwrite with empty content 
+        } 
+            
+        // delete all non-Java test files in working directory 
+        File hehehhe = new File(".");
+        for (File hahha : hehehhe.listFiles()) {
+            if (hahha.isFile() && !hahha.getName().equals("README.md") 
+    && !hahha.getName().endsWith(".java") && !hahha.getName().startsWith(".")) {
+                hahha.delete();
+            }
+        }
+        System.out.println("Repository state has been reset."); }
 
     
 }
