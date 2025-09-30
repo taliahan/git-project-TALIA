@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 public class GitTester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
@@ -76,6 +77,14 @@ public class GitTester {
         // readd same content
         Git.addToIndex(testFile); // should say "Blob already added to index"
 
+        // stretch goal 4.1.1
+        resetRepo();
+
+        testIndexWithFile("alphaaaaaa.txt", "ur not sigma");
+        testIndexWithFile("rad.txt", "ur not rad");
+        testIndexWithFile("gamma.txt", "kappa kappa gamma hahahhahehhehe");
+ 
+
 
  }
     
@@ -138,6 +147,38 @@ public class GitTester {
             cleanUp(git);
         }
         Git.initializeRepo();
+    }
+
+    // adds an entry of a sample txt file into the index file and then verifies that the index entry matches the actual file after being added
+    public static void testIndexWithFile(String filename, String content) throws IOException, NoSuchAlgorithmException {
+        // write sample content into file
+        File file = new File(filename);
+        Files.writeString(file.toPath(), content);
+
+        // add file to index (also creates blob)
+        Git.addToIndex(file);
+
+        // get expected hash
+        String expectedHash = Git.hashSHA1(content);
+
+        // read index and verify that file entry was added to it
+        List<String> lines = Files.readAllLines(new File("git/index").toPath());
+        boolean found = false;
+        for (String line : lines) {
+            if (line.equals(expectedHash + " " + file.getName())) {
+                found = true;
+                break;
+            }
+        }
+
+        // verify blob exists
+        File blobFile = new File("git/objects", expectedHash);
+
+        if (found && blobFile.exists()) {
+            System.out.println("Verified index + blob for " + file.getName());
+        } else {
+            System.out.println("Verification failed for " + file.getName());
+        }
     }
 
 
