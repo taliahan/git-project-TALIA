@@ -159,6 +159,32 @@ public class GitTester {
             System.out.println("Tree file missing blob or tree entries.");
         }
 
+        // testing 3.3
+
+        // step 0: init repo
+        System.out.println("Initializing repo...");
+        Git.initializeRepo();
+        System.out.println();
+
+        // step 1: make working list from index
+        System.out.println("Creating working list...");
+        List<String> workingList = Git.createWorkingList();
+        System.out.println();
+
+        // steps 2–7: create all tree levels
+        System.out.println("Creating trees from working list...");
+        Git.createFirstLeafTree(workingList);
+        System.out.println();
+
+        // final check
+        System.out.println("Final working list:");
+        for (String w : workingList) {
+            System.out.println(w);
+        }
+
+        System.out.println("\nDone. Check git/objects for blob and tree files.");
+
+
 
  }
     
