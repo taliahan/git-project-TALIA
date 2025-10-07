@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
@@ -125,6 +126,38 @@ public class GitTester {
         Git.addToIndex(f1);
         System.out.println("Index after modifying dir1/Hello.txt:\n" + Files.readString(new File("git/index").toPath()));
 
+
+        // testing 3.2
+
+        // making a scripts directory with files/subdirectories
+        new File("project/scripts").mkdirs();
+        Files.writeString(Path.of("project/README.md"), "readme content");
+        Files.writeString(Path.of("project/Hello.txt"), "hello content");
+        Files.writeString(Path.of("project/scripts/Cat.java"), "class Cat {}");
+        Files.writeString(Path.of("project/scripts/Dog.java"), "class Dog {}");
+
+        // calling createTree on the root folder
+        String treeSHA = Git.createTree("project");
+
+        // verify that the tree file was created
+        File treeFile = new File("git/objects", treeSHA);
+        if (treeFile.exists()) {
+            System.out.println("Tree file created successfully");
+        } else {
+            System.out.println("Tree file missing");
+        }
+
+        // print contents of the tree file so i can manually verify
+        System.out.println("\nTree file contents:");
+        System.out.println(Files.readString(treeFile.toPath()));
+
+        // confirming that both blob and tree entries exist in the tree file
+        String treeContents = Files.readString(treeFile.toPath());
+        if (treeContents.contains("blob") && treeContents.contains("tree")) {
+            System.out.println("Tree file correctly lists blobs and subtrees.");
+        } else {
+            System.out.println("Tree file missing blob or tree entries.");
+        }
 
 
  }

@@ -145,6 +145,74 @@ public class Git {
         Files.write(index.toPath(), lines);
     }
 
+
+    // must generate a tree file with references to its files and subdirectories, create all necessary blob objects, and return the SHA-1 hash of the tree
+    public static String createTree(String directoryPath) throws NoSuchAlgorithmException, IOException {
+
+        // validating existence of directory we r building a tree for
+        File dir = new File(directoryPath);
+        if (!dir.exists() || !dir.isDirectory()) {
+            throw new IllegalArgumentException("not a directory");
+        }
+            
+        // arraylist of strings to represent each line we r going to add to the tree
+        ArrayList<String> entries = new ArrayList<>();
+        // getting all files and subdirectories in this directory in the form of an array list of files
+        File[] subs = dir.listFiles();
+
+        // first lets handle files
+        for (File fil : subs) {
+            if (fil.isFile()) {
+                // make sure a blob object exists
+                createBlob(fil);
+
+                // getting the files sha so we can reference in the tree
+                String content = Files.readString(fil.toPath());
+                String sha = hashSHA1(content);
+
+                // add the line to the arraylist of entries (format is blob, <SHA1>, pathname)
+                entries.add("blob " + sha + " " + fil.getName());
+            }
+        }
+
+        // now lets handle subdirectories
+        for (File sub : subs) {
+            if (sub.isDirectory()) {
+                // create tree for the subfolder
+                String subTreeSHA = createTree(sub.getPath());
+                entries.add("tree " + subTreeSHA + " " + sub.getName());
+
+            }
+        }
+        
+        // combining the arraylist of strings (entries) into one string that is separated by new lines
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < entries.size(); i++) {
+            str.append(entries.get(i));
+            if (i < entries.size() - 1) {
+                str.append("\n");
+            }
+        }
+        String treeContent = str.toString();
+
+        // generating sha1 hash of entire tree content
+        String treeSHA = hashSHA1(treeContent);
+
+
+        // write the tree file into git/objects/<treeSHA>
+        // making sure objects directory exists first
+        File objects = new File("git", "objects");
+        if (!objects.exists()) {
+            objects.mkdirs();
+        }
+
+        File treeFile = new File(objects, treeSHA);
+        if (!treeFile.exists()) {
+            Files.writeString(treeFile.toPath(), treeContent);
+        }
+        return treeSHA;
+    }
+
     
 
 }
