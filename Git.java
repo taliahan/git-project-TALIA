@@ -86,9 +86,9 @@ public class Git {
         return blobFile.exists();
     }
 
-    public static void addToIndex(File input) throws NoSuchAlgorithmException, IOException {
-        createBlob(input);
 
+
+    public static void addToIndex(File input) throws NoSuchAlgorithmException, IOException {
         String content = Files.readString(input.toPath());
         String sha = hashSHA1(content);
         
@@ -97,7 +97,16 @@ public class Git {
         if (!index.exists()) {
             index.createNewFile();
         }
-        String add = sha + " " + input.getName();
+
+        // to understand how to get the relative path, looked at: https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html#relativize(java.nio.file.Path), https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html#getPath()
+        // create path object to represent current working directory
+        Path current = Path.of("").toAbsolutePath();
+        // convert the file being staged into an absolute path
+        Path absolute = input.toPath().toAbsolutePath();
+        // to describe the file’s location relative to working directory
+        String relativePath = current.relativize(absolute).toString();
+
+        String add = sha + " " + relativePath;
 
         // reading all the lines
         List<String> lines = new ArrayList<>();
@@ -112,15 +121,17 @@ public class Git {
             String line = lines.get(i);
 
             // if filename already exists in index
-            if (line.endsWith(" " + input.getName())) {
+            if (line.endsWith(" " + relativePath)) {
+
                 // blob alr exists
                 if (line.equals(add)) {
-                    System.out.println("Blob already added to index");
+                    System.out.println("File already staged with same content");
                     return; 
                 } else {
                 // blob file is entered but the content has been altered so it has a new hash
                     lines.set(i, add); // update hash
                     update = true;
+                    System.out.println("File already staged but with different content; updated the index");
                     break;
                 }
             }
@@ -129,6 +140,7 @@ public class Git {
         // if the blob didnt laready exist
         if (!update) {
             lines.add(add); // new file
+            System.out.println("The file was added to the index.");
         }
         Files.write(index.toPath(), lines);
     }
