@@ -80,6 +80,7 @@ public class GitTester {
         // stretch goal 2.4.1
         resetRepo();
 
+
         testIndexWithFile("alphaaaaaa.txt", "ur not sigma");
         testIndexWithFile("rad.txt", "ur not rad");
         testIndexWithFile("gamma.txt", "kappa kappa gamma hahahhahehhehe");
@@ -97,6 +98,32 @@ public class GitTester {
         } else {
             System.out.println("resetRepoState did not fully clean repository.");
         }
+
+        // testing 3.1
+        resetRepo();
+        new File("dir1").mkdir();
+        new File("dir2").mkdir();
+        File f1 = new File("dir1/Hello.txt");
+        File f2 = new File("dir2/Hello.txt");
+        Files.writeString(f1.toPath(), "same content");
+        Files.writeString(f2.toPath(), "same content");
+
+        // add first file
+        Git.addToIndex(f1);
+        System.out.println("Index after first add:" + Files.readString(new File("git/index").toPath()));
+
+        // adding same file again; shoul dignore
+        Git.addToIndex(f1);
+        System.out.println("Index after re-adding same file:" + Files.readString(new File("git/index").toPath()));
+
+        // adding identical file from different dir; should add a second line  
+        Git.addToIndex(f2);
+        System.out.println("Index after adding identical file from another folder:" + Files.readString(new File("git/index").toPath()));
+
+        // modifying first file; should update sha 
+        Files.writeString(f1.toPath(), "modified content!");
+        Git.addToIndex(f1);
+        System.out.println("Index after modifying dir1/Hello.txt:\n" + Files.readString(new File("git/index").toPath()));
 
 
 
