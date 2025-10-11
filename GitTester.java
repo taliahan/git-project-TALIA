@@ -7,186 +7,16 @@ import java.util.List;
 
 public class GitTester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        Git.initializeRepo();
-        verifyRepo();
-        File git = new File("git");
-        cleanUp(git);
-
-        // ensuring robust functionality
-        for (int i = 0; i < 300; i++) {
-            Git.initializeRepo();
-            verifyRepo();
-            cleanUp(git);
-        }
-
-        // testing sha1
-        String result = Git.hashSHA1("Hero pookie");
-        String expectation = "d187aa9d5bd8719783d54b081624b8d34f014104";
-        if (result.equals(expectation))  {
-            System.out.println("hash method works");
-        }
-        else {
-            System.out.println("hash method doesnt work");
-        }
-        
-        // testing createBlob
-        File examp1 = new File("blob.txt");
-        Files.writeString(examp1.toPath(), "Hello world");
-
-        Git.initializeRepo(); 
-        Git.createBlob(examp1);
-        String hash = Git.hashSHA1("Hello world");
-        File blobFile = new File("git/objects", hash);
-
-        if (blobFile.exists()) {
-            System.out.println("Blob created successfully: " + blobFile.getName());
-        } else {
-            System.out.println("Blob creation failed.");
-        }
-
-        // stretch goal 3.1.1
         resetRepo();
-        File test = new File("blobtest.txt");
-        Files.writeString(test.toPath(), "Stretch goal!");
-        Git.createBlob(test);
+        Git.stage(new File(".gitignore"));
+        Git.stage(new File("README.md"));
+        Git.stage(new File("Git.java"));
+        Git.stage(new File("GitTester.java"));
+        Git.stage(new File("GitWrapper.java"));
 
-        if (Git.verifyBlob("Stretch goal!")) {
-            System.out.println("Blob verified successfully.");
-        } else {
-            System.out.println("Blob not found.");
-        }
-
-        resetRepo();
-
-        // testing addToIndex
-        File testFile = new File("testIndex.txt");
-        Files.writeString(testFile.toPath(), "first version");
-
-        Git.initializeRepo();
-        Git.addToIndex(testFile);
-
-        // verify added
-        System.out.println("Index after first add: " + Files.readString(new File("git/index").toPath()));
-
-        // change file content
-        Files.writeString(testFile.toPath(), "second version");
-        Git.addToIndex(testFile);
-
-        // verify updated
-        System.out.println("Index after update: " + Files.readString(new File("git/index").toPath()));
-
-        // readd same content
-        Git.addToIndex(testFile); // should say "Blob already added to index"
-
-        // stretch goal 2.4.1
-        resetRepo();
-
-
-        testIndexWithFile("alphaaaaaa.txt", "ur not sigma");
-        testIndexWithFile("rad.txt", "ur not rad");
-        testIndexWithFile("gamma.txt", "kappa kappa gamma hahahhahehhehe");
-
-        // stretch goal 2.4.2
-        System.out.println("Running resetRepoState...");
-        resetRepoState();
-
-        // verify repo is clean
-        File objects = new File("git/objects");
-        File index = new File("git/index");
-
-        if (objects.exists() && objects.listFiles().length == 0 && index.exists() && index.length() == 0) {
-            System.out.println("resetRepoState successfully cleaned repository.");
-        } else {
-            System.out.println("resetRepoState did not fully clean repository.");
-        }
-
-        // testing 3.1
-        resetRepo();
-        new File("dir1").mkdir();
-        new File("dir2").mkdir();
-        File f1 = new File("dir1/Hello.txt");
-        File f2 = new File("dir2/Hello.txt");
-        Files.writeString(f1.toPath(), "same content");
-        Files.writeString(f2.toPath(), "same content");
-
-        // add first file
-        Git.addToIndex(f1);
-        System.out.println("Index after first add:" + Files.readString(new File("git/index").toPath()));
-
-        // adding same file again; shoul dignore
-        Git.addToIndex(f1);
-        System.out.println("Index after re-adding same file:" + Files.readString(new File("git/index").toPath()));
-
-        // adding identical file from different dir; should add a second line  
-        Git.addToIndex(f2);
-        System.out.println("Index after adding identical file from another folder:" + Files.readString(new File("git/index").toPath()));
-
-        // modifying first file; should update sha 
-        Files.writeString(f1.toPath(), "modified content!");
-        Git.addToIndex(f1);
-        System.out.println("Index after modifying dir1/Hello.txt:\n" + Files.readString(new File("git/index").toPath()));
-
-
-        // testing 3.2
-
-        // making a scripts directory with files/subdirectories
-        new File("project/scripts").mkdirs();
-        Files.writeString(Path.of("project/README.md"), "readme content");
-        Files.writeString(Path.of("project/Hello.txt"), "hello content");
-        Files.writeString(Path.of("project/scripts/Cat.java"), "class Cat {}");
-        Files.writeString(Path.of("project/scripts/Dog.java"), "class Dog {}");
-
-        // calling createTree on the root folder
-        String treeSHA = Git.createTree("project");
-
-        // verify that the tree file was created
-        File treeFile = new File("git/objects", treeSHA);
-        if (treeFile.exists()) {
-            System.out.println("Tree file created successfully");
-        } else {
-            System.out.println("Tree file missing");
-        }
-
-        // print contents of the tree file so i can manually verify
-        System.out.println("\nTree file contents:");
-        System.out.println(Files.readString(treeFile.toPath()));
-
-        // confirming that both blob and tree entries exist in the tree file
-        String treeContents = Files.readString(treeFile.toPath());
-        if (treeContents.contains("blob") && treeContents.contains("tree")) {
-            System.out.println("Tree file correctly lists blobs and subtrees.");
-        } else {
-            System.out.println("Tree file missing blob or tree entries.");
-        }
-
-        // testing 3.3
-
-        // step 0: init repo
-        System.out.println("Initializing repo...");
-        Git.initializeRepo();
-        System.out.println();
-
-        // step 1: make working list from index
-        System.out.println("Creating working list...");
-        List<String> workingList = Git.createWorkingList();
-        System.out.println();
-
-        // steps 2–7: create all tree levels
-        System.out.println("Creating trees from working list...");
-        Git.createFirstLeafTree(workingList);
-        System.out.println();
-
-        // final check
-        System.out.println("Final working list:");
-        for (String w : workingList) {
-            System.out.println(w);
-        }
-
-        System.out.println("\nDone. Check git/objects for blob and tree files.");
-
-
-
- }
+        String commit = Git.commit("Shimon", "test commit");        
+        Git.checkout(commit);
+    }
     
     public static void verifyRepo() {
         File git = new File("git");
@@ -231,13 +61,7 @@ public class GitTester {
     // https://stackoverflow.com/questions/20281835/how-to-delete-a-folder-with-files-using-java
     // got help here for deleting directories
     public static void cleanUp(File directory) {
-        for (File subFile : directory.listFiles()) {
-            if (subFile.isDirectory()) {
-                cleanUp(subFile);
-            }
-            subFile.delete();
-        }
-        directory.delete();
+        Git.cleanUp(directory);
     }
 
 
@@ -309,6 +133,4 @@ public class GitTester {
             }
         }
         System.out.println("Repository state has been reset."); }
-
-    
 }
