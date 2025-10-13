@@ -473,6 +473,27 @@ public class Git {
             return null;
         }
 
+        // ensures every staged file has a blob
+        for (String entry : wl) {
+            String[] parts = entry.split(" ", 3);
+            if (parts.length < 3) {
+                continue;
+            }
+
+            String sha = parts[1];
+            String path = parts[2];
+
+            File blobFile = new File("git/objects", sha);
+            if (!blobFile.exists()) {
+                File sourceFile = new File(path);
+                if (sourceFile.exists() && sourceFile.isFile()) {
+                    createBlob(sourceFile);  
+                } else {
+                    System.out.println("file not found or invalid path: " + path);
+                }
+            }
+}
+
         // keep collapsing deepest leaf dirs until only one tree remains
         while (!(wl.size() == 1 && wl.get(0).startsWith("tree "))) {
             String leaf = findLeafMostDir(wl);
