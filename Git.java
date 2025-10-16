@@ -111,6 +111,7 @@ public class Git {
 
         String add = sha + " " + relativePath;
 
+        
         // reading all the lines
         List<String> lines = new ArrayList<>();
         if (index.length() > 0) {
